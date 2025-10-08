@@ -56,13 +56,14 @@ def extract_po_data(pdf_path):
 
     # Regex patterns for each field
     splitted_text= text.split('Item Total Value')[1]
+    VAS = text.split('Line Item Text')[1].split('Item#')[0]
     country = splitted_text.split('Line Item')[0].split()[-1].split(",")[-1].strip()
     Description_2 = splitted_text.split('Line Item')[0]
     splitted_text = splitted_text.split('Date')[1].split('\n')[1].strip()
     
     description_text = splitted_text.split('Line Item')[0]
     splitted_text = splitted_text.split()
-    
+
     fields["HOD Date"] = next(date for date in splitted_text if is_date_format(date))
 
     Description_1 = description_text.split(splitted_text[1])[1]
@@ -81,14 +82,14 @@ def extract_po_data(pdf_path):
     fields["Plant Code"] = splitted_text[splitted_text.index(next(date for date in splitted_text if is_date_format(date))) + 2]
     fields["Style Number"] = splitted_text[1]    
     fields["Description"] = Description    
-    
+    fields["VAS"] = str(VAS.lstrip().rstrip()).replace('\n', ', ')
+
     patterns = {
         "PO Number": r"Purchase Order#\s*(\d+)",
-        "PO Header Text": r"PO Header Text\s*-\s*(.*?)(?=Purchase Order Item Details)",
+        "PO Header Text": r"PO Header Text\s*-\s*(.*?)(?=\s*Purchase Order Item Details)",
         "FFC Code": r"FFC Code\s*([A-Z0-9]+)",
         "Country": r"Manufacturing Country of Origin.*",
         "Sourcing Type": r"Sourcing Type\s*-\s*([^\n]+)",
-        "VAS": r"Line Item VAS\s*Line Item Text\n([\s\S]+?)\nItem#",
         "Season": r"Season\s*([\w\d]+)",
         "Brand": r"Brand\s*([\w\d]+)",
         "PO Rel Date": r"PO Rel Date\s*(\d{2}\.\d{2}\.\d{4})"
@@ -109,7 +110,7 @@ def extract_po_data(pdf_path):
     return fields
 
 if __name__ == "__main__":
-    pdf_path = "azSXYx.pdf"  # Replace with your PDF path
+    pdf_path = "azSXYx.pdf"  
     data = extract_po_data(pdf_path)
     for key, value in data.items():
         print(f"{key}: {value}")
